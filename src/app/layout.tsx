@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={` flex flex-col min-h-screen`}>
+      <body className={` flex flex-col min-h-screen bg-primary`}>
         <header className="sticky top-0 z-40 w-full h-[60px] bg-primary text-primary-foreground border-b shadow-sm">
           <div className="container mx-auto px-4 h-full flex items-center justify-between">
             <Menubar className="flex-shrink-0">
@@ -59,7 +59,7 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="flex-grow overflow-y-auto">
+        <main className="flex-grow overflow-y-auto bg-background">
           <div className="container mx-auto px-4 py-8">{children}</div>
         </main>
 
