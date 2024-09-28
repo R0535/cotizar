@@ -1,5 +1,5 @@
 import { MenubarShortcut } from "@/components/ui/menubar";
-import { menu } from "@/layouts/models/menu";
+import { menu } from "@/app/layouts/models/menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Menubar,
