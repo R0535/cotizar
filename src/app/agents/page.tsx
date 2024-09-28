@@ -23,11 +23,12 @@ const initialTravelers: Traveler[] = [
   { id: 2, name: 'Bob Smith', destination: 'Tokyo, Japan', departureDate: '2023-08-01', imageUrl: "https://github.com/shadcn.png" },
   { id: 3, name: 'Charlie Brown', destination: 'New York, USA', departureDate: '2023-07-22', imageUrl: "https://github.com/shadcn.png" },
   { id: 4, name: 'Diana Martinez', destination: 'Rome, Italy', departureDate: '2023-08-10', imageUrl: "https://github.com/shadcn.png" },
-  { id: 5, name: 'Ethan Williams', destination: 'Sydney, Australia', departureDate: '2023-09-05', imageUrl: "https://github.com/shadcn.png" },  { id: 1, name: 'Alice Johnson', destination: 'Paris, France', departureDate: '2023-07-15', imageUrl: "https://github.com/shadcn.png" },
+  { id: 5, name: 'Ethan Williams', destination: 'Sydney, Australia', departureDate: '2023-09-05', imageUrl: "https://github.com/shadcn.png" },
   { id: 6, name: 'Bob Smith', destination: 'Tokyo, Japan', departureDate: '2023-08-01', imageUrl: "https://github.com/shadcn.png" },
   { id: 7, name: 'Charlie Brown', destination: 'New York, USA', departureDate: '2023-07-22', imageUrl: "https://github.com/shadcn.png" },
   { id: 8, name: 'Diana Martinez', destination: 'Rome, Italy', departureDate: '2023-08-10', imageUrl: "https://github.com/shadcn.png" },
   { id: 9, name: 'Ethan Williams', destination: 'Sydney, Australia', departureDate: '2023-09-05', imageUrl: "https://github.com/shadcn.png" },
+  { id: 10, name: 'Alice Johnson', destination: 'Paris, France', departureDate: '2023-07-15', imageUrl: "https://github.com/shadcn.png" },
 ]
 const Page: React.FC = () => {
   const [travelers, setTravelers] = useState<Traveler[]>(initialTravelers)

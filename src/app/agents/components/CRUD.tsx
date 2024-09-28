@@ -38,7 +38,6 @@ type Props = {
 export default function TravelerTable(
     { initialTravelers ,setTravelers}: Props
 ) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [currentTraveler, setCurrentTraveler] = useState<Traveler | null>(null)
