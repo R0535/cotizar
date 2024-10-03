@@ -28,30 +28,28 @@ export async function POST(request: Request) {
   }
 }
 
-// Función helper para mapear el DTO a los datos de Prisma
 export interface PrismaSchemaDto {
-  id?: string;
+  id: string;
   name: string;
   address: string;
   city: string;
   state: string;
   zip: string;
+  country: string;
+
   phone: string;
   email: string;
-  country: string;
+
   active: boolean;
   deleted: boolean;
-  deletedAt?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-  createdBy?: string;
-  updatedBy?: string;
-  userId?: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date|null;
 }
 function toCreatePrisma(dto: PostAgentRequest): PrismaSchemaDto {
   return {
     id : "",
-    userId:"",
     name: dto.name,
     email: dto.email,
     phone: dto.phone,
@@ -64,8 +62,6 @@ function toCreatePrisma(dto: PostAgentRequest): PrismaSchemaDto {
     deleted: false,
     createdAt: new Date(),
     updatedAt: new Date(),
-    createdBy: dto.creatorId,
-    updatedBy: "",
-
+    deletedAt: null,
   } 
 }

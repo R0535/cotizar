@@ -41,10 +41,7 @@ model User {
 
   Action Action[]
   
-  // Relaciones inversas para `Agents` (Agentes creados y actualizados)
-  createdAgents Agent[]  @relation(name: "AgentCreatedBy")
-  updatedAgents Agent[]  @relation(name: "AgentUpdatedBy")
-  agents        Agent[]  @relation(name: "AgentUser")
+
 }
 
 model Session {
@@ -78,9 +75,10 @@ model Agent {
   city    String
   state   String
   zip     String
+  country String
+  
   phone   String
   email   String
-  country String
 
   active  Boolean @default(true)
   deleted Boolean @default(false)
@@ -88,15 +86,5 @@ model Agent {
   deletedAt   DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  updatedBy   User?    @relation(name: "AgentUpdatedBy", fields: [updatedById], references: [id])
-  updatedById String?
-
-    // Clave foránea y relación para `createdBy`
-  createdById String?
-  createdBy   User?     @relation(name: "AgentCreatedBy", fields: [createdById], references: [id])
-
-  // Clave foránea y relación para `user`
-  userId      String?
-  user        User?     @relation(name: "AgentUser", fields: [userId], references: [id])
 }
 
