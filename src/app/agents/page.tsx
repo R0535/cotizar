@@ -22,22 +22,27 @@ import {
   closeCreateModal,
   createAgent,
   editAgent,
+  fetchAgents,
   openCreateModal,
   setAgent,
   setAgents,
   setCreateAgentForm,
   setEditAgentForm,
 } from "@/lib/features/agents/slices/AgentsSlice";
-import {
-  CreateAgentForm,
-  EditAgentForm,
-} from "@/lib/features/agents/models/AgentsVM";
 import { create } from "domain";
 import AgentsTable from "./components/CRUD";
-import { GetAgentDto } from "@/lib/features/agents/models/Agents";
+import {
+  GetAgentDto,
+  PostAgentRequest,
+} from "@/lib/features/agents/models/Agents";
 
 const Page: React.FC = () => {
   const dispatch = useAppDispatch();
+
+  //send initial request to get all agents
+  useEffect(() => {
+    dispatch(fetchAgents());
+  }, []);
 
   const screenVM = useAppSelector((state) => state.agents.screenVM);
 
@@ -129,7 +134,7 @@ const Page: React.FC = () => {
                         setCreateAgentForm({
                           ...createAgentForm,
                           name: e.target.value,
-                        } as CreateAgentForm)
+                        } as PostAgentRequest)
                       )
                     }
                     className="col-span-3"
@@ -147,7 +152,7 @@ const Page: React.FC = () => {
                         setCreateAgentForm({
                           ...createAgentForm,
                           email: e.target.value,
-                        } as CreateAgentForm)
+                        } as PostAgentRequest)
                       )
                     }
                     className="col-span-3"
@@ -166,7 +171,7 @@ const Page: React.FC = () => {
                         setCreateAgentForm({
                           ...createAgentForm,
                           phone: e.target.value,
-                        } as CreateAgentForm)
+                        } as PostAgentRequest)
                       )
                     }
                     className="col-span-3"
@@ -185,7 +190,7 @@ const Page: React.FC = () => {
                         setCreateAgentForm({
                           ...createAgentForm,
                           address: e.target.value,
-                        } as CreateAgentForm)
+                        } as PostAgentRequest)
                       )
                     }
                     className="col-span-3"
@@ -204,7 +209,7 @@ const Page: React.FC = () => {
                         setCreateAgentForm({
                           ...createAgentForm,
                           city: e.target.value,
-                        } as CreateAgentForm)
+                        } as PostAgentRequest)
                       )
                     }
                     className="col-span-3"
@@ -223,12 +228,49 @@ const Page: React.FC = () => {
                         setCreateAgentForm({
                           ...createAgentForm,
                           state: e.target.value,
-                        } as CreateAgentForm)
+                        } as PostAgentRequest)
                       )
                     }
                     className="col-span-3"
                   />
                 </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="zip" className="text-right">
+                    Zip
+                  </Label>
+                  <Input
+                    id="zip"
+                    value={createAgentForm?.zip}
+                    onChange={(e) =>
+                      dispatch(
+                        setCreateAgentForm({
+                          ...createAgentForm,
+                          zip: e.target.value,
+                        } as PostAgentRequest)
+                      )
+                    }
+                    className="col-span-3"
+                  />
+
+                  <Label htmlFor="country" className="text-right">
+                    Country
+                  </Label>
+                  <Input
+                    id="country"
+                    value={createAgentForm?.country}
+                    onChange={(e) =>
+                      dispatch(
+                        setCreateAgentForm({
+                          ...createAgentForm,
+                          country: e.target.value,
+                        } as PostAgentRequest)
+                      )
+                    }
+                  />
+                </div>
+
+
               </div>
               <DialogFooter>
                 <Button onClick={handleSaveNewAgent}>Add Traveler</Button>

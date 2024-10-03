@@ -1,16 +1,13 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {  PayloadAction } from "@reduxjs/toolkit";
 
 import {
   AgentsVM,
-  CreateAgentForm,
   CreateAgentFormErrors,
-  EditAgentForm,
   EditAgentFormErrors,
 } from "../models/AgentsVM";
-import { error } from "console";
-import { GetAgentDto } from "../models/Agents";
-import { create } from "domain";
+import { GetAgentDto, PostAgentRequest, PutAgentRequest } from "../models/Agents";
 import { createAgentsSlice } from "./createAgentsSlice";
+import { AgentsApi } from "@/lib/api/AgentsApi";
 
 //make a simple array of agents
 const agents: GetAgentDto[] = [
@@ -81,7 +78,7 @@ const agents: GetAgentDto[] = [
   },
 ];
 //make empty forms
-const emptyCreateAgentForm: CreateAgentForm = {
+const emptyCreateAgentForm: PostAgentRequest = {
   name: "",
   email: "",
   phone: "",
@@ -90,6 +87,8 @@ const emptyCreateAgentForm: CreateAgentForm = {
   state: "",
   zip: "",
   country: "",
+  userId: "",
+  creatorId: "",
 };
 const emptyCreateAgentFormErrors: CreateAgentFormErrors = {
   nameError: "",
@@ -101,7 +100,7 @@ const emptyCreateAgentFormErrors: CreateAgentFormErrors = {
   zipError: "",
   countryError: "",
 };
-const emptyEditAgentForm: EditAgentForm = {
+const emptyEditAgentForm: PutAgentRequest = {
   id: "",
   name: "",
   email: "",
@@ -111,6 +110,8 @@ const emptyEditAgentForm: EditAgentForm = {
   state: "",
   zip: "",
   country: "",
+  userId: "",
+  updaterId: "",
 };
 const emptyEditAgentFormErrors: EditAgentFormErrors = {
   idError: "",
@@ -124,6 +125,10 @@ const emptyEditAgentFormErrors: EditAgentFormErrors = {
   countryError: "",
 };
 
+//create api reference
+const api: AgentsApi = new AgentsApi("/api");
+
+
 interface AgentsState {
   screenVM: AgentsVM; //screen state
 
@@ -131,9 +136,9 @@ interface AgentsState {
   agentsQuery: GetAgentDto[] | null; //agents with queries and filters
   agent: GetAgentDto | null; //selected agent from the list
 
-  createAgentForm: CreateAgentForm | null; //form state
+  createAgentForm: PostAgentRequest | null; //form state
   createAgentFormErrors: CreateAgentFormErrors | null; //form errors
-  editAgentForm: EditAgentForm | null; //form
+  editAgentForm: PutAgentRequest | null; //form
   editAgentFormErrors: EditAgentFormErrors | null; //form errors
 
   apiError: string | null; //error message
@@ -145,7 +150,7 @@ const initialState: AgentsState = {
     modalCreateAgentOpen: false,
   },
 
-  agents: agents,
+  agents: null,
   agentsQuery: null,
   agent: null,
 
@@ -161,10 +166,11 @@ const initialState: AgentsState = {
 const agentsSlice = createAgentsSlice({
   name: "agents",
   initialState,
-  reducers: (create) => ({
+  reducers: (createRx) => ({
+    //#region Form States
     //VM
-    openEditModal: create.reducer(
-      (state, action: PayloadAction<EditAgentForm>) => {
+    openEditModal: createRx.reducer(
+      (state, action: PayloadAction<PutAgentRequest>) => {
         state.apiError = null;
 
         state.editAgentForm = action.payload;
@@ -173,13 +179,13 @@ const agentsSlice = createAgentsSlice({
         state.screenVM.modalEditAgentOpen = true;
       }
     ),
-    closeEditModal: create.reducer((state) => {
+    closeEditModal: createRx.reducer((state) => {
       state.editAgentForm = emptyEditAgentForm;
       state.editAgentFormErrors = emptyEditAgentFormErrors;
 
       state.screenVM.modalEditAgentOpen = false;
     }),
-    openCreateModal: create.reducer((state) => {
+    openCreateModal: createRx.reducer((state) => {
       state.apiError = null;
 
       state.createAgentForm = emptyCreateAgentForm;
@@ -187,21 +193,21 @@ const agentsSlice = createAgentsSlice({
 
       state.screenVM.modalCreateAgentOpen = true;
     }),
-    closeCreateModal: create.reducer((state) => {
+    closeCreateModal: createRx.reducer((state) => {
       state.createAgentForm = emptyCreateAgentForm;
       state.createAgentFormErrors = emptyCreateAgentFormErrors;
 
       state.screenVM.modalCreateAgentOpen = false;
     }),
+    //#endregion Form States
+    //#region Local Repository Streams
 
-    //Local Repository Streams
-
-    setAgents: create.reducer(
+    setAgents: createRx.reducer(
       (state, action: PayloadAction<GetAgentDto[] | null>) => {
         state.agents = action.payload;
       }
     ),
-    setAgent: create.reducer(
+    setAgent: createRx.reducer(
       (state, action: PayloadAction<GetAgentDto | null>) => {
         state.agent = action.payload;
         state.editAgentForm = {
@@ -214,11 +220,13 @@ const agentsSlice = createAgentsSlice({
           state: action.payload?.state || "",
           zip: action.payload?.zip || "",
           country: action.payload?.country || "",
+          userId: action.payload?.id || "",
+          updaterId: action.payload?.id || "",
         };
         state.editAgentFormErrors = emptyEditAgentFormErrors;
       }
     ),
-    setAgentsQuery: create.reducer((state, action: PayloadAction<string>) => {
+    setAgentsQuery: createRx.reducer((state, action: PayloadAction<string>) => {
       if (action.payload === "") {
         state.agentsQuery = null;
         return;
@@ -239,24 +247,79 @@ const agentsSlice = createAgentsSlice({
           );
         }) || null;
     }),
+    //#endregion Local Repository Streams
+    //#region Async Thunks
+    /**
+     * Async Thunks are used to make API calls and handle the response.
+     */
+    //Local API
+    fetchAgents: createRx.asyncThunk(async (_, thunkAPI) => {
 
-    //Local Fake API
-    createAgent: create.asyncThunk(async (form: CreateAgentForm, thunkAPI) => {
-      const response = await new Promise<GetAgentDto>((resolve) => {
-        setTimeout(() => {
-          resolve({
-            id: (agents.length + 1).toString(),
-            ...form,
-            createdOn: new Date().toISOString(),
-            updatedOn: new Date().toISOString(),
-          });
-        }, 2000);
-      });
+      thunkAPI.dispatch(setLoading(true));
+      thunkAPI.dispatch(setApiError(null));
 
-      return response;
+      try {
+        const response = await api.getAgents();
+        if (!response) {
+          thunkAPI.dispatch(setApiError("Failed to fetch agents"));
+          thunkAPI.dispatch(setLoading(false));
+          throw new Error("Failed to fetch agents");
+        }
+        thunkAPI.dispatch(setAgents(response));
+        thunkAPI.dispatch(setLoading(false));
+        return response;
+      } catch (error : any) {
+
+        thunkAPI.dispatch(setApiError(error?.message || "Failed to fetch agents"));
+        thunkAPI.dispatch(setLoading(false));
+
+        return thunkAPI.rejectWithValue(error);
+      }
     }),
+    createAgent: createRx.asyncThunk(
+      async (form: PostAgentRequest, thunkAPI) => {
+        thunkAPI.dispatch(setLoading(true));
+        thunkAPI.dispatch(setApiError(null));
 
-    editAgent: create.asyncThunk(async (form: EditAgentForm, thunkAPI) => {
+        try {
+          const response = await api.createAgent(form);
+
+          if (!response) {
+            thunkAPI.dispatch(setApiError("Failed to create agent"));
+            thunkAPI.dispatch(setLoading(false));
+            throw new Error("Failed to create agent");
+
+          }
+
+          thunkAPI.dispatch(setLoading(false));
+          thunkAPI.dispatch(closeCreateModal());
+          return response;
+        } catch (error:any) {
+          thunkAPI.dispatch(setApiError(error?.message || "Failed to create agent"));
+          thunkAPI.dispatch(setLoading(false));
+          return thunkAPI.rejectWithValue(error);
+        }
+      }
+    ),
+        //Local Fake API
+    createAgentLocal: createRx.asyncThunk(
+      async (form: PostAgentRequest) => {
+        const response = await new Promise<GetAgentDto>((resolve) => {
+          setTimeout(() => {
+            resolve({
+              id: (agents.length + 1).toString(),
+              ...form,
+              createdOn: new Date().toISOString(),
+              updatedOn: new Date().toISOString(),
+            });
+          }, 2000);
+        });
+
+        return response;
+      }
+    ),
+
+    editAgent: createRx.asyncThunk(async (form: PutAgentRequest, thunkAPI) => {
       const response = await new Promise<GetAgentDto>((resolve) => {
         setTimeout(() => {
           const agent = agents.find((agent) => agent.id === form.id);
@@ -278,10 +341,12 @@ const agentsSlice = createAgentsSlice({
       });
       return response;
     }),
-
-    //Forms
-    setCreateAgentForm: create.reducer(
-      (state, action?: PayloadAction<CreateAgentForm | null>) => {
+    //#endregion
+    /***
+     * Form States are used to manage the form state and errors.
+     */
+    setCreateAgentForm: createRx.reducer(
+      (state, action?: PayloadAction<PostAgentRequest | null>) => {
         if (action) {
           state.createAgentForm = action.payload;
           return;
@@ -289,33 +354,40 @@ const agentsSlice = createAgentsSlice({
       }
     ),
 
-    setCreateAgentFormErrors: create.reducer(
+    setCreateAgentFormErrors: createRx.reducer(
       (state, action: PayloadAction<CreateAgentFormErrors>) => {
         state.createAgentFormErrors = action.payload;
       }
     ),
 
-    setEditAgentForm: create.reducer(
-      (state, action: PayloadAction<EditAgentForm>) => {
+    setEditAgentForm: createRx.reducer(
+      (state, action: PayloadAction<PutAgentRequest>) => {
         state.editAgentForm = action.payload;
       }
     ),
-    setEditAgentFormErrors: create.reducer(
+    setEditAgentFormErrors: createRx.reducer(
       (state, action: PayloadAction<EditAgentFormErrors>) => {
         state.editAgentFormErrors = action.payload;
       }
     ),
 
-    //Api Responses and States
-    setApiError: create.reducer(
+    /**
+     * States to handle API errors and loading state.
+     */
+    setApiError: createRx.reducer(
       (state, action: PayloadAction<string | null>) => {
         state.apiError = action.payload;
       }
     ),
-    setLoading: create.reducer((state, action: PayloadAction<boolean>) => {
+    setLoading: createRx.reducer((state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     }),
   }),
+  //#endregion Form States
+
+  /*
+Selectors are used to extract data from the Redux store state.
+*/
   selectors: {
     getScreenVM: (agentsState) => agentsState.screenVM,
 
@@ -344,6 +416,7 @@ export const {
   openCreateModal,
   openEditModal,
   setAgentsQuery,
+  fetchAgents,
   createAgent,
   editAgent,
   setCreateAgentForm,

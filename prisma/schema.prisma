@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String?
+  passwordHash String
+  code         String? @unique
+
+  active      Boolean   @default(true)
+  deleted     Boolean   @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relaciones autorreferenciales para `createdBy` y `updatedBy` (si las tienes)
+  createdById  String?
+  createdBy    User?     @relation(name: "UserCreatedBy", fields: [createdById], references: [id])
+  updatedById  String?
+  updatedBy    User?     @relation(name: "UserUpdatedBy", fields: [updatedById], references: [id])
+
+
+  // Relaciones inversas para `User` (usuarios creados y actualizados)
+  createdUsers User[]    @relation(name: "UserCreatedBy")
+  updatedUsers User[]    @relation(name: "UserUpdatedBy")
+
+  Session Session[]
+
+  Action Action[]
+  
+  // Relaciones inversas para `Agents` (Agentes creados y actualizados)
+  createdAgents Agent[]  @relation(name: "AgentCreatedBy")
+  updatedAgents Agent[]  @relation(name: "AgentUpdatedBy")
+  agents        Agent[]  @relation(name: "AgentUser")
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  started   DateTime
+  expires   DateTime
+  expiredAt DateTime?
+  token     String    @unique
+  active    Boolean   @default(true)
+
+  Action Action[]
+}
+
+model Action {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?
+  type      String
+  data      String
+  created   DateTime @default(now())
+}
+
+model Agent {
+  id      String @id @default(cuid())
+  name    String
+  address String
+  city    String
+  state   String
+  zip     String
+  phone   String
+  email   String
+  country String
+
+  active  Boolean @default(true)
+  deleted Boolean @default(false)
+
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  updatedBy   User?    @relation(name: "AgentUpdatedBy", fields: [updatedById], references: [id])
+  updatedById String?
+
+    // Clave foránea y relación para `createdBy`
+  createdById String?
+  createdBy   User?     @relation(name: "AgentCreatedBy", fields: [createdById], references: [id])
+
+  // Clave foránea y relación para `user`
+  userId      String?
+  user        User?     @relation(name: "AgentUser", fields: [userId], references: [id])
+}
+
