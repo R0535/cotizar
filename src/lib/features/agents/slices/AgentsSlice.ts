@@ -7,7 +7,7 @@ import {
 } from "../models/AgentsVM";
 import { GetAgentDto, PostAgentRequest, PutAgentRequest } from "../models/Agents";
 import { createAgentsSlice } from "./createAgentsSlice";
-import { AgentsApi } from "@/lib/api/AgentsApi";
+import { AgentsApi } from "@/lib/api/Agents/AgentsApi";
 
 //make a simple array of agents
 const agents: GetAgentDto[] = [

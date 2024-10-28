@@ -1,15 +1,15 @@
-// src/app/api/agents/route.ts
+// src/app/api/users/route.ts
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { PostAgentRequest } from '@/lib/features/agents/models/Agents';
+import { PostUserRequest } from '@/lib/features/users/models/Users';
 import { toCreatePrisma } from './models/models';
 
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   try {
-    const agents = await prisma.agent.findMany();
-    return NextResponse.json(agents);
+    const users = await prisma.user.findMany();
+    return NextResponse.json(users);
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 });
   }
@@ -18,12 +18,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const agentData = toCreatePrisma(body as PostAgentRequest);
+    const userData = toCreatePrisma(body as PostUserRequest);
 
-    const newAgent = await prisma.agent.create({
-      data: agentData,
+    const newUser = await prisma.user.create({
+      data: userData,
     });
-    return NextResponse.json(newAgent, { status: 201 });
+    return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: error }, { status: 500 });
   }

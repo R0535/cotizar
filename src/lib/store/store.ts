@@ -1,10 +1,15 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit'
 import agentsReducer from '@/lib/features/agents/slices/AgentsSlice'
+import usersReducer from '@/lib/features/users/slices/UsersSlice'
+import featuresReducer from '@/lib/features/canvas/slices/FeaturesSlice'
+import projectsReducer from '@/lib/features/canvas/slices/ProjectsSlice'
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      agents: agentsReducer
-
+      agents: agentsReducer,
+      users: usersReducer,
+      features: featuresReducer,
+      projects: projectsReducer,
     }
   })
 }

@@ -62,7 +62,7 @@ export default function RootLayout({
           </header>
 
           <main className="flex-grow overflow-y-auto bg-background">
-            <div className="container mx-auto px-4 py-8">{children}</div>
+            {children}
           </main>
 
           <footer className="sticky bottom-0 z-40 w-full h-[60px] bg-white border-t shadow-sm">

@@ -22,7 +22,7 @@ export interface PostAgentRequest {
   zip: string;
   country: string;
 
-  userId: string;
+  userId?: string;
 
   creatorId: string;
 }

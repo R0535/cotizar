@@ -1,9 +1,5 @@
-import {
-  GetAgentDto,
-  PostAgentRequest,
-  PostAgentResponse,
-  PutAgentResponse,
-} from "../features/agents/models/Agents";
+import { GetAgentDto, PostAgentRequest, PostAgentResponse, PutAgentResponse } from "@/lib/features/agents/models/Agents";
+
 
 export class AgentsApi {
   private baseUrl: string;

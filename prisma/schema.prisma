@@ -14,34 +14,42 @@ datasource db {
 }
 
 model User {
-  id           String  @id @default(cuid())
-  email        String  @unique
-  name         String?
+  id String @id @default(cuid())
+
+  email        String @unique
   passwordHash String
-  code         String? @unique
 
-  active      Boolean   @default(true)
-  deleted     Boolean   @default(false)
-  deletedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  name String?
+  code String? @unique
+
+  phone   String
+  address String
+  city    String
+  state   String
+  zip     String
+  country String
+
+  active    Boolean   @default(true)
+  deleted   Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
   // Relaciones autorreferenciales para `createdBy` y `updatedBy` (si las tienes)
-  createdById  String?
-  createdBy    User?     @relation(name: "UserCreatedBy", fields: [createdById], references: [id])
-  updatedById  String?
-  updatedBy    User?     @relation(name: "UserUpdatedBy", fields: [updatedById], references: [id])
-
+  createdById String?
+  createdBy   User?   @relation(name: "UserCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation(name: "UserUpdatedBy", fields: [updatedById], references: [id])
 
   // Relaciones inversas para `User` (usuarios creados y actualizados)
-  createdUsers User[]    @relation(name: "UserCreatedBy")
-  updatedUsers User[]    @relation(name: "UserUpdatedBy")
+  createdUsers User[] @relation(name: "UserCreatedBy")
+  updatedUsers User[] @relation(name: "UserUpdatedBy")
 
-  Session Session[]
+  sessions Session[]
 
-  Action Action[]
-  
+  actions Action[]
 
+  estimations Estimation[]
 }
 
 model Session {
@@ -54,7 +62,7 @@ model Session {
   token     String    @unique
   active    Boolean   @default(true)
 
-  Action Action[]
+  actions Action[]
 }
 
 model Action {
@@ -68,23 +76,131 @@ model Action {
   created   DateTime @default(now())
 }
 
-model Agent {
-  id      String @id @default(cuid())
-  name    String
-  address String
-  city    String
-  state   String
-  zip     String
-  country String
-  
-  phone   String
-  email   String
+model Project {
+  id          String  @id @default(cuid())
+  name        String
+  logo        String?
+  previews    String?
+  description String?
 
-  active  Boolean @default(true)
-  deleted Boolean @default(false)
+  createdAt DateTime @default(now())
 
-  deletedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  // Nullable relationships
+  createdById String?
+
+  // Relationships
+
+  estimations Estimation[]
 }
 
+model Estimation {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  createdAt DateTime @default(now())
+
+  // Nullable relationships
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+  // Relationships
+  projectid   String
+  project     Project @relation(fields: [projectid], references: [id])
+
+  nodes    Node[]
+  calendar Calendar?
+
+  estimationExports EstimationExport[]
+}
+
+model EstimationExport {
+  id           String     @id @default(cuid())
+  estimationId String
+  estimation   Estimation @relation(fields: [estimationId], references: [id])
+  data         String
+  url          String
+  createdAt    DateTime   @default(now())
+}
+
+model Calendar {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  initialDateFront DateTime
+  initialDateBack  DateTime
+  endDateFront     DateTime
+  endDateBack      DateTime
+
+  personalFront Int
+  personalBack  Int
+
+  createdAt DateTime @default(now())
+
+  estimationId String?     @unique
+  estimation   Estimation? @relation(fields: [estimationId], references: [id])
+}
+
+model Node {
+  id String @id @default(uuid()) // Unique ID for the node
+
+  label       String // Label for the node
+  timeBack    Decimal // Time (as number)
+  timeFront   Decimal // Time (as number)
+  description String? // Optional description
+
+  baseFeature String? // Optional base feature
+  tags        String? // Tags for the node
+
+  type      String // Node type
+  color     String // Color code
+  positionX Float // X position of the node
+  positionY Float // Y position of the node
+  width     Float? // Optional measured width
+  height    Float? // Optional measured height
+
+  section String // Section
+
+  projectId   String?
+  projectName String?
+
+  estimationId String?
+  estimation   Estimation? @relation(fields: [estimationId], references: [id])
+
+  dependencies Dependency[]
+}
+
+model Dependency {
+  id String @id @default(uuid())
+
+  value  String
+  nodeId String
+  node   Node   @relation(fields: [nodeId], references: [id])
+}
+
+// Sections
+
+model Section {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+
+  features Feature[]
+}
+
+model Feature {
+  id String @id @default(uuid())
+
+  label       String
+  description String?
+  timeBack    Decimal
+  timeFront   Decimal
+  color       String
+
+  previews String?
+  tags     String?
+
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id])
+}
