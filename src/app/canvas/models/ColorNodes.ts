@@ -13,10 +13,16 @@ export type ColorNodeData = {
   label: string;
   description: string;
   section: string;
-  time: number;
+  timeBack: number;
+  timeFront: number;
+
+  baseFeature: string;
+  tags  : string;
+
   dependencies: string[];
   customProperties: CustomProperty[];
   color?: string;
+
 };
 export type DependencyNodeData = {
   parents: string[];

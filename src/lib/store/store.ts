@@ -1,8 +1,10 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit'
+import sectionsReducer from '@/lib/features/sections/slices/SectionsSlice'
 import agentsReducer from '@/lib/features/agents/slices/AgentsSlice'
 import usersReducer from '@/lib/features/users/slices/UsersSlice'
-import featuresReducer from '@/lib/features/canvas/slices/FeaturesSlice'
+import featuresReducer from '@/lib/features/features/slices/FeaturesSlice'
 import projectsReducer from '@/lib/features/canvas/slices/ProjectsSlice'
+import nodesReducer from '@/lib/features/canvas/slices/NodesSlice'
 export const makeStore = () => {
   return configureStore({
     reducer: {
@@ -10,6 +12,9 @@ export const makeStore = () => {
       users: usersReducer,
       features: featuresReducer,
       projects: projectsReducer,
+      sections: sectionsReducer,
+      nodes: nodesReducer,
+
     }
   })
 }

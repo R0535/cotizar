@@ -12,37 +12,64 @@ const prisma = new PrismaClient();
 const uploadDir = path.join(process.cwd(), "/public/images");
 const allowedFormats = ["image/png", "image/jpeg"];
 
-export async function GET() {
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const isEnumRequest = url.searchParams.get("enum") === "true"; // Verifica si el query `enum` está presente
+
   try {
-    const sections = await prisma.section.findMany();
-    console.log("sections", sections);
-    return NextResponse.json(sections, { status: 200 });
+    if (isEnumRequest) {
+      // Si el parámetro `enum=true` está presente, solo devuelve `id` y `name`
+      const sections = await prisma.section.findMany({
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: {
+          id: "desc",
+        },
+      });
+      return Response.json(sections, { status: 200 });
+    } else {
+      // Si `enum` no está presente, devuelve la respuesta completa
+      const sections = await prisma.section.findMany({
+        include: {
+          features: true,
+        },
+        orderBy: {
+          id: "desc",
+        },
+      });
+      return Response.json(sections, { status: 200 });
+    }
   } catch (error: any) {
-    return error.message;
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function POST(request: NextApiRequest) {
-  const body = await request.body();
+export async function POST(request: Request) {
+
+  const body = await request.json();
+
   try {
     const newSection = await prisma.section.create({
       data: {
-        id: cuid(),
-        name: body.label,
+        name: body.name,
         description: body.description,
       },
     });
 
     if (newSection === null) {
-      return NextResponse.json(
+      return Response.json(
         { error: "Failed to create Section." },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(newSection, { status: 201 });
+    return Response.json(newSection, { status: 201 });
   } catch (error:any) {
-    return error.message
+    console.log("error", error);
+    console.log("error.message", error.message);  
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }
 

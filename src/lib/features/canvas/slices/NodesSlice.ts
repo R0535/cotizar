@@ -3,14 +3,14 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import {
   CreateFeatureFormErrors,
   EditFeatureFormErrors,
+  GetFeatureDto,
   PostFeatureRequest,
   PutFeatureRequest,
-  
 } from "../models/Features";
-import { createFeaturesSlice } from "./createFeaturesSlice";
+import { createNodesSlice } from "./createNodesSlice";
 
 import { FeaturesApi } from "@/lib/api/Features/FeaturesApi";
-import {  CustomProperty, FeatureCardVM } from "../models/CanvasVM";
+import { CustomProperty, FeatureCardVM } from "../models/CanvasVM";
 import { type Node, type Edge } from "@xyflow/react";
 import { ColorNodeData } from "@/app/canvas/models/ColorNodes";
 import { create } from "domain";
@@ -34,7 +34,6 @@ const emptyCreateFeatureFormErrors: CreateFeatureFormErrors = {
   descriptionError: "",
   timeError: "",
   dependenciesError: "",
-  
 };
 
 const emptyEditFeatureFormErrors: EditFeatureFormErrors = {
@@ -121,30 +120,31 @@ const initialState: FeaturesState = {
   loading: false,
 };
 
-const featuresSlice = createFeaturesSlice({
-  name: "features",
+const nodesSlice = createNodesSlice({
+  name: "nodes",
   initialState,
   reducers: (createRx) => ({
     //#region handlers form states
     //VM
-    handleCreate: createRx.reducer((state) => {
-      state.apiError = null;
-      state.editFeatureForm = null;
-      state.editFeatureFormErrors = null;
 
-      state.createFeatureForm = emptyCreateFeatureForm;
-      state.createFeatureFormErrors = emptyCreateFeatureFormErrors;
+    //#endregion handlers form states
+
+    //#region Local Repository Streams
+
+    //NODES AND EDGES
+    setNodesVM: createRx.reducer((state, action: PayloadAction<Node[]>) => {
+      state.nodes = action.payload;
     }),
-    handleEdit: createRx.reducer(
-      (state, action: PayloadAction<FeatureCardVM>) => {
-        state.apiError = null;
-        state.createFeatureForm = null;
-        state.createFeatureFormErrors = null;
+    updateNode: createRx.reducer((state, action: PayloadAction<Node>) => {
+      // Eliminar el nodo antiguo si existe
+      const nodeIndex = state.nodes.findIndex(
+        (node) => node.data.id === action.payload.data.id
+      );
 
-        state.editFeatureForm = action.payload;
-        state.editFeatureFormErrors = emptyEditFeatureFormErrors;
+      if (nodeIndex !== -1) {
+        state.nodes[nodeIndex] = action.payload;
       }
-    ),
+    }),
     handleClear: createRx.reducer((state) => {
       state.feature = null;
 
@@ -157,30 +157,30 @@ const featuresSlice = createFeaturesSlice({
       state.apiError = null;
       state.loading = false;
     }),
-
-    //#endregion handlers form states
-
-    //#region Local Repository Streams
-
-    //NODES AND EDGES
-    setNodesVM: createRx.reducer((state, action: PayloadAction<Node[]>) => {
-      state.nodes = action.payload;
-    }),
-    addNode: createRx.reducer((state, action: PayloadAction<Node[]>) => {
-      state.nodes = [];
-      state.nodes.push(...action.payload);
-    }),
-    updateNode: createRx.reducer((state, action: PayloadAction<Node>) => {
-      // Eliminar el nodo antiguo si existe
-      const nodeIndex = state.nodes.findIndex(
-        (node) => node.data.id === action.payload.data.id
-      );
-
-      if (nodeIndex !== -1) {
-        state.nodes[nodeIndex] = action.payload;
+    handleEdit: createRx.reducer(
+      (state, action: PayloadAction<FeatureCardVM>) => {
+        state.feature = action.payload;
+        state.editFeatureForm = {
+          id: action.payload.id,
+          label: action.payload.label,
+          description: action.payload.description,
+          time: action.payload.time,
+          dependencies: action.payload.dependencies,
+          customProperties: action.payload.customProperties,
+          color: action.payload.color,
+          changeColor: action.payload.changeColor,
+          section: action.payload.section,
+        };
+        state.editFeatureFormErrors = emptyEditFeatureFormErrors;
       }
+    ),
+    handleCreate: createRx.reducer((state) => {
+      state.createFeatureForm = emptyCreateFeatureForm;
+      state.createFeatureFormErrors = emptyCreateFeatureFormErrors;
     }),
-
+    addNode: createRx.reducer((state, action: PayloadAction<Node>) => {
+      state.nodes.push(action.payload);
+    }),
     addFeature: createRx.reducer(
       (state, action: PayloadAction<FeatureCardVM>) => {
         state.features?.push(action.payload);
@@ -188,20 +188,17 @@ const featuresSlice = createFeaturesSlice({
     ),
     updateFeature: createRx.reducer(
       (state, action: PayloadAction<FeatureCardVM>) => {
-        // Inicializar 'state.features' si es 'undefined' o 'null'
-        if (!state.features) {
-          state.features = [];
-        }
-
-        // Eliminar la característica antigua si existe
-        state.features = state.features.filter(
-          (feature) => feature?.id !== action.payload.id
+        const index = state.features?.findIndex(
+          (feature) => feature.id === action.payload.id
         );
-
-        // Agregar la nueva característica
-        state.features.push(action.payload);
+        if (index !== -1) {
+          //state.features[index] = action.payload;
+        }
       }
     ),
+    addEdge: createRx.reducer((state, action: PayloadAction<Edge>) => {
+      state.edges?.push(action.payload);
+    }),
 
     setFeatures: createRx.reducer(
       (state, action: PayloadAction<FeatureCardVM[] | null>) => {
@@ -388,7 +385,7 @@ export const {
   addNode,
   updateNode,
   setNodesVM,
-} = featuresSlice.actions; //actions
+} = nodesSlice.actions; //actions
 
 export const {
   getFeatures,
@@ -402,6 +399,6 @@ export const {
   getEditFeatureFormErrors,
   getNodes,
   getEdges,
-} = featuresSlice.selectors; //selectors
+} = nodesSlice.selectors; //selectors
 
-export default featuresSlice.reducer;
+export default nodesSlice.reducer;

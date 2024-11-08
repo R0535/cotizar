@@ -3,9 +3,10 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { PostFeatureRequest } from "@/lib/features/canvas/models/Features";
 import { Node } from "@xyflow/react";
 import { ColorNodeType } from "@/app/canvas/models/ColorNodes";
-import { create } from "domain";
-import path from "path";
+import { Mime } from "mime";
+import path, { join } from "path";
 import fs from "fs";
+import { mkdir, stat, writeFile } from "fs/promises";
 
 const prisma = new PrismaClient();
 
@@ -24,15 +25,57 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const mime = new Mime();
   const formData = await request.formData();
+  console.log("formData ------- ", formData);
   const body = Object.fromEntries(formData);
+  console.log("body -           -", body);
+  const file2 = (formData.get("preview") as File) || null;
+  console.log("file2- - - - - ", file2);
   const file = (body.file as Blob) || null;
+  console.log("file- - - - - ", file);
+
+  const buffer = Buffer.from(await file2.arrayBuffer());
+  const relativeUploadDir = `/uploads/${new Date(Date.now())
+    .toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, "-")}`;
+  const uploadDir = join(process.cwd(), "public", relativeUploadDir);
+
+  //creating directory for the file
+  try {
+    await stat(uploadDir);
+  } catch (e: any) {
+    if (e.code === "ENOENT") {
+      // This is for checking the directory is exist (ENOENT : Error No Entry)
+      await mkdir(uploadDir, { recursive: true });
+    } else {
+      console.error(
+        "Error while trying to create directory when uploading a file\n",
+        e
+      );
+      return NextResponse.json(
+        { error: "Something went wrong." },
+        { status: 500 }
+      );
+    }
+  }
 
   try {
-    const body = await request.json();
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const filename = `${file2.name.replace(
+      /\.[^/.]+$/,
+      ""
+    )}-${uniqueSuffix}.${mime.getExtension(file2.type)}`;
+    await writeFile(`${uploadDir}/${filename}`, buffer);
+    const fileUrl = `${relativeUploadDir}/${filename}`;
+    console.log("fileUrl", fileUrl);
 
     const section = await prisma.section.findUnique({
-      where: { id: body.sectionId },
+      where: { id: parseInt(body.sectionId.toString()) },
     });
 
     if (section === null) {
@@ -43,59 +86,34 @@ export async function POST(request: NextRequest) {
     }
     console.log("body", body);
 
-    //handle save images and return the path
-    if (file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir);
-      }
-
-      fs.writeFileSync(
-        path.resolve(uploadDir, (body.file as File).name),
-        buffer
-      );
-    } else {
-      return NextResponse.json({
-        success: false,
-      });
-    }
-
     const newFeature = await prisma.feature.create({
       data: {
         id: cuid(),
-        label: body.label,
-        description: body.description,
-        tags: body.tags,
-        color: body.color,
+        label: body.label as string,
+        description: body.description as string,
+        tags: body.tags as string,
+        color: body.color as string,
 
-        timeBack: body.timeBack,
-        timeFront: body.timeFront,
+        timeBack: parseInt(body.timeBack.toString()),
+        timeFront: parseInt(body.timeFront.toString()),
 
-        previews: body.previews,
+        previews: fileUrl,
 
-        sectionId: body.sectionId,
-        section: {
-          connect: {
-            id: section.id,
-          },
-        },
+        sectionId: parseInt((body.sectionId as string).toString()),
       },
     });
-
     if (newFeature === null) {
-      return NextResponse.json(
+      return Response.json(
         { error: "Failed to create Feature." },
         { status: 500 }
       );
     }
-
-    return NextResponse.json(newFeature, { status: 201 });
-  } catch (error:any) {
-    return error.message
+    return Response.json(newFeature, { status: 201 });
+  } catch (e) {
+    console.error("Error while trying to upload a file\n", e);
+    return Response.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
-
-
 
 function cuid(): string | undefined {
   return (

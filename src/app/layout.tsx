@@ -24,9 +24,9 @@ export default function RootLayout({
   return (
     <StoreProvider>
       <html lang="en">
-        <body className={` flex flex-col min-h-screen bg-primary`}>
-          <header className="sticky top-0 z-40 w-full h-[60px] bg-primary text-primary-foreground border-b shadow-sm">
-            <div className="container mx-auto px-4 h-full flex items-center justify-between">
+        <body className={` flex flex-col min-h-screen bg-background`}>
+          <header className="sticky top-0 z-40 w-full h-[60px] bg-secondary-foreground text-primary-foreground border-b shadow-sm">
+            <div className="w-full px-4 h-full flex items-center justify-between bg-secondary-foreground ">
               <Menubar className="flex-shrink-0">
                 {menu.map((section) => (
                   <MenubarMenu key={section.trigger}>
@@ -45,9 +45,8 @@ export default function RootLayout({
               </Menubar>
               <div
                 className="
-    flex flex-row items-center gap-2
-    mt-2 sm:mt-0
-  "
+                      flex flex-row items-center gap-2
+                      sm:mt-0 bg-secondary-foreground "
               >
                 <h1 className="text-sm font-medium">Jorge Álvarez</h1>
                 <Avatar>
@@ -57,15 +56,15 @@ export default function RootLayout({
                   />
                   <AvatarFallback>JA</AvatarFallback>
                 </Avatar>
-              </div>{" "}
+              </div>
             </div>
           </header>
 
-          <main className="flex-grow overflow-y-auto bg-background">
+          <main className="flex-grow overflow-y-auto min-w-[575px] min-h-[900px]">
             {children}
           </main>
 
-          <footer className="sticky bottom-0 z-40 w-full h-[60px] bg-white border-t shadow-sm">
+          <footer className="sticky bottom-0 z-40 w-full h-[60px] bg-white border-t shadow-sm min-w-[575px]">
             <div className="container mx-auto px-4 h-full flex items-center justify-center">
               <p className="text-sm text-gray-600">
                 © 2023 My App. All rights reserved.

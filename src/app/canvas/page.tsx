@@ -28,14 +28,11 @@ import SideBar from "./components/SideBar";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
-  addNode,
   createFeature,
   handleClear,
-  handleCreate,
-  handleEdit,
-  setFeature,
-  setNodesVM,
-} from "@/lib/features/canvas/slices/FeaturesSlice";
+  setFeature,  
+} from "@/lib/features/features/slices/FeaturesSlice";
+import { handleCreate, handleEdit, setNodesVM } from "@/lib/features/canvas/slices/NodesSlice";
 import { useSelector } from "react-redux";
 import { CustomProperty } from "@/lib/features/canvas/models/CanvasVM";
 import { FeatureCardVM } from "@/lib/features/canvas/models/CanvasVM";
@@ -99,7 +96,7 @@ export default function Index() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
-  const storeNodes = useAppSelector((state) => state.features.nodes);
+  const storeNodes = useAppSelector((state) => state.nodes.nodes);
 
   const project = useAppSelector((state) => state.projects.project);
   //#endregion

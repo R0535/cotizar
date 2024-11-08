@@ -20,7 +20,7 @@ export class FeaturesApi {
     return response.json();
   }
 
-  async getFeatureById(featureId: string): Promise<GetFeatureDto> {
+  async getFeature(featureId: string): Promise<GetFeatureDto> {
     const response = await fetch(`${this.baseUrl}/features/${featureId}`, {
       method: "GET",
       headers: {
@@ -35,13 +35,10 @@ export class FeaturesApi {
     return response.json();
   }
 
-  async createFeature(featureData: PostFeatureRequest): Promise<PostFeatureResponse> {
-    const response = await fetch(`${this.baseUrl}/features`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(featureData),
+  async createFeature(featureData: FormData): Promise<PostFeatureResponse> {
+    const response = await fetch("/api/features", {
+      method: "POST",
+      body: featureData,
     });
 
     if (!response.ok) {

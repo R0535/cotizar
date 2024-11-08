@@ -1,67 +1,69 @@
-import { NextResponse } from "next/server";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { Node } from "@xyflow/react";
-import { ColorNodeType } from "@/app/canvas/models/ColorNodes";
-import { create } from "domain";
-import path from "path";
-import fs from "fs";
-import { useParams } from "next/navigation";
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 import { NextApiRequest } from "next";
-import { error } from "console";
-
 const prisma = new PrismaClient();
+interface Params {
+  params: {
+    id: string;
+  };
+}
 
-const uploadDir = path.join(process.cwd(), "/public/images");
-const allowedFormats = ["image/png", "image/jpeg"];
+export async function GET( _r:NextRequest,{ params }: Params) {
+  console.log("GET request", params);
+  
+  const { id } = params; // Obtener el `id` directamente desde `params`
 
-export async function GET(request: NextApiRequest) {
-  const id = request.query;
   try {
-    const sections = await prisma.section.findMany({
-      where: {
-        id: id,
-      },
+    if (!id) {
+      return Response.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    const section = await prisma.section.findUniqueOrThrow({
+      where: { id: parseInt(id) },
     });
 
-    return NextResponse.json(sections);
-  } catch (error:any) {
-    return error.message
+    const sections = await prisma.section.findMany();
+    console.log("sections", sections);
+
+    return Response.json(section, { status: 200 });
+  } catch (error: any) {
+    console.error("Error fetching section:", error);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(request: NextApiRequest) {
-  const body = await request.body;
-  const id = request.query;
-  //handle save images and return the path
+export async function PUT( request:Request,{ params }: Params) {
+  const { id } = params;
+  const body = await request.json();
 
+  console.log("PUT request", request + " - " + request.body);
 
   try {
     const updatedSection = await prisma.section.update({
-      where: { id: String(id) },
-      data: {
-        name: body.name,
-        description: body.description,        
-      },
+      where: { id: parseInt(id.toString()) },
+      data: { ...body },
     });
 
     if (updatedSection === null) {
-      return NextResponse.json(
+      return Response.json(
         { error: "Failed to update Section. " },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(updatedSection, { status: 200 });
+    return Response.json(updatedSection, { status: 200 });
   } catch (error: any) {
     return error.message;
   }
 }
 
 export async function DELETE(request: NextApiRequest) {
+  console.log("DELETE request", request.query);
+
   const id = request.query;
   try {
     const deletedSection = await prisma.section.delete({
-      where: { id: String(id) },
+      where: { id: parseInt(id.toString()) },
     });
 
     if (deletedSection === null) {
@@ -76,5 +78,3 @@ export async function DELETE(request: NextApiRequest) {
     return error.message;
   }
 }
-
-
