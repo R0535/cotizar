@@ -10,8 +10,6 @@ import { mkdir, stat, writeFile } from "fs/promises";
 
 const prisma = new PrismaClient();
 
-const uploadDir = path.join(process.cwd(), "/public/images");
-const allowedFormats = ["image/png", "image/jpeg"];
 
 export async function GET() {
   try {
@@ -21,19 +19,18 @@ export async function GET() {
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: error }, { status: 500 });
+  } finally {
+    prisma.$disconnect();
   }
 }
 
 export async function POST(request: NextRequest) {
-  const mime = new Mime();
   const formData = await request.formData();
   console.log("formData ------- ", formData);
   const body = Object.fromEntries(formData);
   console.log("body -           -", body);
   const file2 = (formData.get("preview") as File) || null;
   console.log("file2- - - - - ", file2);
-  const file = (body.file as Blob) || null;
-  console.log("file- - - - - ", file);
 
   const buffer = Buffer.from(await file2.arrayBuffer());
   const relativeUploadDir = `/uploads/${new Date(Date.now())
@@ -66,10 +63,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const extension =file2.name.split(".").pop();
     const filename = `${file2.name.replace(
       /\.[^/.]+$/,
       ""
-    )}-${uniqueSuffix}.${mime.getExtension(file2.type)}`;
+    )}-${uniqueSuffix}.${extension}`;
     await writeFile(`${uploadDir}/${filename}`, buffer);
     const fileUrl = `${relativeUploadDir}/${filename}`;
     console.log("fileUrl", fileUrl);
@@ -112,6 +110,8 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     console.error("Error while trying to upload a file\n", e);
     return Response.json({ error: "Something went wrong." }, { status: 500 });
+  } finally {
+    prisma.$disconnect();
   }
 }
 

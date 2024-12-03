@@ -67,7 +67,7 @@ export default function RootLayout({
           <footer className="sticky bottom-0 z-40 w-full h-[60px] bg-white border-t shadow-sm min-w-[575px]">
             <div className="container mx-auto px-4 h-full flex items-center justify-center">
               <p className="text-sm text-gray-600">
-                © 2023 My App. All rights reserved.
+                © 2025 ABST Software. All rights reserved.
               </p>
             </div>
           </footer>

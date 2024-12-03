@@ -79,14 +79,20 @@ model Action {
 model Project {
   id          String  @id @default(cuid())
   name        String
+  description String?
   logo        String?
   previews    String?
-  description String?
+  
+  status String?
+  statusDescription String?
+  statusDate DateTime?
+  
+  estimationSelectedId String?
 
   createdAt DateTime @default(now())
 
   // Nullable relationships
-  createdById String?
+  createdBy String
 
   // Relationships
 

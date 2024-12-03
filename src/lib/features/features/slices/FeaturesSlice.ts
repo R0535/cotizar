@@ -12,21 +12,34 @@ import {
 } from "../models/Features";
 import { createFeaturesSlice } from "./createFeaturesSlice";
 import { FeaturesApi } from "@/lib/api/Features/FeaturesApi";
-import { handleEdit } from "../../canvas/slices/NodesSlice";
 
 
 //make empty forms
 const emptyCreateFeatureForm: PostFeatureRequest = {
-  name: "",
+  label: "",
   description: "",
+  color: "",
+  timeBack: 0,
+  timeFront: 0,
+  tags: "",
+  sectionId: 0,
+  preview: "",
+
+
 };
 const emptyCreateFeatureFormErrors: CreateFeatureFormErrors = {
   nameError: "",
 };
 const emptyEditFeatureForm: PutFeatureRequest = {
-  id: 0,
-  name: "",
+  id: "",
+  label: "",
   description: "",
+  color: "",
+  timeBack: 0,
+  timeFront: 0,
+  tags: "",
+  sectionId: 0,
+  preview: "",
 };
 const emptyEditFeatureFormErrors: EditFeatureFormErrors = {
   nameError: "",
@@ -102,8 +115,14 @@ const featuresSlice = createFeaturesSlice({
       state.feature = action.payload;
       state.editFeatureForm = {
         id: action.payload.id,
-        name: action.payload.name,
+        label: action.payload.label,
         description: action.payload.description,
+        color: action.payload.color,
+        timeBack: action.payload.timeBack,
+        timeFront: action.payload.timeFront,
+        tags: action.payload.tags,
+        sectionId: action.payload.sectionId,
+        preview: action.payload.previews,
       };
       state.editFeatureFormErrors = emptyEditFeatureFormErrors;
     }),
@@ -143,9 +162,16 @@ const featuresSlice = createFeaturesSlice({
       (state, action: PayloadAction<GetFeatureDto | null>) => {
         state.feature = action.payload;
         state.editFeatureForm = {
-          id: action.payload?.id || 0,
-          name: action.payload?.name || "",
+          id: action.payload?.id || "",
+          label: action.payload?.label || "",
           description: action.payload?.description || "",
+          color: action.payload?.color || "",
+          timeBack: action.payload?.timeBack || 0,
+          timeFront: action.payload?.timeFront || 0,
+          tags: action.payload?.tags || "",
+          sectionId: action.payload?.sectionId || 0,
+          preview: action.payload?.previews || "",
+
         };
         state.editFeatureFormErrors = emptyEditFeatureFormErrors;
       }
@@ -159,7 +185,7 @@ const featuresSlice = createFeaturesSlice({
         state.featuresQuery =
           state.features?.filter((feature: GetFeatureDto) => {
             return (
-              feature.name
+              feature.label
                 .toLowerCase()
                 .includes(action.payload.toLowerCase()) ||
               feature.description
@@ -232,7 +258,7 @@ const featuresSlice = createFeaturesSlice({
         return thunkAPI.rejectWithValue(error.message);
       }
     }),
-    fetchFeature: createRx.asyncThunk(async (id:number, thunkAPI) => {
+    fetchFeature: createRx.asyncThunk(async (id:string, thunkAPI) => {
 
       thunkAPI.dispatch(setLoading(true));
       thunkAPI.dispatch(setApiError(null));
@@ -281,13 +307,13 @@ const featuresSlice = createFeaturesSlice({
       }
     ),
     updateFeature: createRx.asyncThunk(
-      async (form: PutFeatureRequest, thunkAPI) => {
+      async ( form: FormData, thunkAPI) => {
         thunkAPI.dispatch(setLoading(true));
         thunkAPI.dispatch(setApiError(null));
 
         try {
           const response = await api.updateFeature(
-            form.id.toString(),
+            form.get("id") as string,
             form
           );
 

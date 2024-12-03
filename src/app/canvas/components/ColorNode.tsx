@@ -5,7 +5,7 @@ import "@xyflow/react/dist/style.css";
 import { useState } from "react";
 import { ColorNodeData, ColorNodeType } from "../models/ColorNodes";
 import { useAppDispatch } from "@/lib/hooks";
-import { updateNode } from "@/lib/features/canvas/slices/FeaturesSlice";
+import { updateNode } from "@/lib/features/canvas/slices/NodesSlice";
 
 export default function ColorNode(nodeProps: NodeProps<ColorNodeType>) {
   const dispatch = useAppDispatch();
@@ -55,7 +55,7 @@ export default function ColorNode(nodeProps: NodeProps<ColorNodeType>) {
         <h2 className="font-bold">Descripción</h2>
         <p className="text-accent">{nodeProps.data.description as string}</p>
         <h2 className=" font-bold">Tiempo</h2>
-        <p className="text-accent">{nodeProps.data.time as number} horas</p>
+        <p className="text-accent">{nodeProps.data.timeBack as number} horas</p>
       </div>
 
       <div className="p-2">

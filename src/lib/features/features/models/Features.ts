@@ -12,15 +12,28 @@ interface Feature {
 }
 
 export interface GetFeatureDto {
-  id: number;
-  name: string;
+  id: string;
+  label: string;
   description: string;
   features: Feature[];
+  timeBack: number;
+  timeFront: number;
+  previews: string;
+  color : string;
+  sectionId: number;
+  tags: string;
 }
 
 export interface PostFeatureRequest {
-  name: string;
+  label: string;
   description: string;
+  color: string;
+  timeBack: number;
+  timeFront: number;
+  tags: string;
+  sectionId: number;
+  preview: string;
+  
 }
 export interface PostFeatureResponse {
   id: string;
@@ -29,10 +42,18 @@ export interface PostFeatureResponse {
   description: string;
 }
 export interface PutFeatureRequest {
-  id: number;
+  id: string;
 
-  name: string;
+  label: string;
   description: string;
+
+  color: string;
+  timeBack: number;
+  timeFront: number;
+  tags: string;
+  sectionId: number;
+  preview: string;
+
 }
 export interface PutFeatureResponse {
 

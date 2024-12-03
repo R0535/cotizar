@@ -7,16 +7,11 @@ import {
   
 } from "@/lib/features/canvas/models/CanvasVM";
 import {
-  addFeature,
   addNode,
   handleClear,
-  handleCreate,
-  handleEdit,
   setCreateFeatureForm,
   setEditFeatureForm,
-  setFeature,
-  updateFeature,
-} from "@/lib/features/canvas/slices/FeaturesSlice";
+} from "@/lib/features/features/slices/FeaturesSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { Node } from "@xyflow/react";
 import { PlusCircle, X } from "lucide-react";

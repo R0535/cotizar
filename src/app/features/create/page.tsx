@@ -23,10 +23,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { fetchSectionsEnum } from "@/lib/features/sections/slices/SectionsSlice";
 import { createFeature } from "@/lib/features/features/slices/FeaturesSlice";
+import Link from "next/link";
+import { X } from "lucide-react";
 
 export default function CreateFeature() {
   const dispatch = useAppDispatch();
@@ -231,8 +232,11 @@ export default function CreateFeature() {
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit">Create Feature</Button>
+          <CardFooter className="flex justify-end space-x-2">
+            <Button variant="outline" asChild>
+              <Link href="/features">Cancel</Link>
+            </Button>
+            <Button type="submit">Save</Button>
           </CardFooter>
         </form>
       </Card>

@@ -3,8 +3,9 @@ import sectionsReducer from '@/lib/features/sections/slices/SectionsSlice'
 import agentsReducer from '@/lib/features/agents/slices/AgentsSlice'
 import usersReducer from '@/lib/features/users/slices/UsersSlice'
 import featuresReducer from '@/lib/features/features/slices/FeaturesSlice'
-import projectsReducer from '@/lib/features/canvas/slices/ProjectsSlice'
+import projectsReducer from '@/lib/features/projects/slices/ProjectsSlice'
 import nodesReducer from '@/lib/features/canvas/slices/NodesSlice'
+
 export const makeStore = () => {
   return configureStore({
     reducer: {

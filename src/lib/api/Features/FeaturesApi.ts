@@ -1,5 +1,4 @@
-import { FeatureCardVM } from "@/lib/features/canvas/models/CanvasVM";
-import { GetFeatureDto, PostFeatureRequest, PostFeatureResponse, PutFeatureResponse } from "@/lib/features/canvas/models/Features";
+import { GetFeatureDto, PostFeatureResponse, PutFeatureResponse } from "@/lib/features/features/models/Features";
 
 
 export class FeaturesApi {
@@ -9,7 +8,7 @@ export class FeaturesApi {
     this.baseUrl = baseUrl;
   }
 
-  async getFeatures(): Promise<FeatureCardVM[]> {
+  async getFeatures(): Promise<GetFeatureDto[]> {
     const response = await fetch(`${this.baseUrl}/features`, {
       method: "GET",
     });
@@ -49,14 +48,11 @@ export class FeaturesApi {
 
   async updateFeature(
     featureId: string,
-    featureData: any
+    featureData: FormData
   ): Promise<PutFeatureResponse> {
     const response = await fetch(`${this.baseUrl}/features/${featureId}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(featureData),
+      body: featureData,
     });
 
     if (!response.ok) {
